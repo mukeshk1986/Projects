@@ -7,6 +7,7 @@ Created on Mon Feb 25 16:34:54 2019
 #This file runs various methods defined in the spotifyProjectClasses.py module.
 #Methods can be disabled by commenting lines.
 
+#testing change
 
 import numpy as np
 import os,sys
@@ -51,10 +52,8 @@ for i in range(10):
     temp = [[user_Data[x][y+1] for x in range(len(user_Data)) if i == int(user_Data[x][14])] for y in range(16) if y !=13]
     #creating list of user objects:
     m_Fans.append(spc.musicFan(i,temp))
-    #m_Fans[i].mean()
-    #m_Fans[i].makeScatters()
-    #m_Fans[i].makeHistos()
     #users have a variable called cSim which is the output of cosineSimilarity:
+    m_Fans[i].getFromData(data_Base)
     m_Fans[i].cosineSimilarity(songs)
 
 
