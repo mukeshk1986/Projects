@@ -5,6 +5,8 @@ Created on Mon Feb 25 16:34:54 2019
 @author: agarc
 """
 
+#testing gitHub commit
+
 import numpy as np
 import os,sys
 import spotifyProjectClasses as spc
