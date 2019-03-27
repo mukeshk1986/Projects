@@ -47,20 +47,29 @@ m_Fans = []
 #adding songs to songs object, contains all songs
 songs = spc.songs(music_Data[np.isfinite(np.float64(music_Data[:,7]))])
 
+t1 = time.time()
 for i in range(10):
     #opening user data:
     temp = [[user_Data[x][y+1] for x in range(len(user_Data)) if i == int(user_Data[x][14])] for y in range(16) if y !=13]
     #creating list of user objects:
     m_Fans.append(spc.musicFan(i,temp))
-    #users have a variable called cSim which is the output of cosineSimilarity:
-    m_Fans[i].getFromData(data_Base)
-    m_Fans[i].cosineSimilarity(songs)
-
-
 t2 = time.time()
+print(t2-t1, "seconds for making user objects")
+    
+t1 = time.time()
+for i in range(10):
+    m_Fans[i].getFromData(data_Base) #this pulls additional info from the database file
+t2 = time.time()
+print(t2-t1, "seconds for getting data from database")
+    
+t1 = time.time()
+for i in range(10):
+    m_Fans[i].cosineSimilarity(songs) #users have a variable called cSim which is the output of cosineSimilarity:
+t2 = time.time()
+print(t2-t1, "seconds for applying cosine similarity")
 
-print(t1-t0,t2-t1)
 
+'''
 #for example:
 #mFan 0 has a cSim matrix of shape 109x265119:
 #this is because User0 liked 109 songs. Each song has an associated matrix of length 265119 attached to it.
@@ -71,5 +80,5 @@ print(songs.name[m_Fans[0].cSim[0]>0.992])
 #this prints out the names of songs whose features are similar to those of song0 in user0
 #we can probably improve this by removing features that have little effect on the actual sound. I have tested some of these by comparing the songs on youtube
 #and it seems to work decently.
-    
+'''   
  

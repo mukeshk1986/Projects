@@ -27,6 +27,9 @@ class musicFan:
                        , np.float64(tastes[3]), np.int_(tastes[4]), np.float64(tastes[5]),\
                        np.float64(tastes[6]), np.float64(tastes[7]), np.float64(tastes[8])\
                        , np.float64(tastes[9]), np.float64(tastes[10])]).T
+        self.songNames = []
+        self.simSongsNames = []
+        self.simSongsID = []
         
         if not os.path.exists("UserOutput"):
             os.makedirs("UserOutput")
@@ -35,7 +38,15 @@ class musicFan:
         
         
     def getFromData(self,dataBase):
-        self.songID = 1
+        self.songNames = []
+        songNames = np.array(dataBase["song_name"])
+        dID = np.array(dataBase["database_id"])
+        for i in range(len(self.dataID)):
+            for x in range(len(songNames)):
+                if dID[x] in self.dataID[i]:
+                    self.songNames.append(songNames[x])
+        self.songNames = np.array(self.songNames)
+
         
     def mean(self):
         self.mean_Tastes = np.mean(self.tastes, axis = 1)
