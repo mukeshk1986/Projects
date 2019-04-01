@@ -22,7 +22,7 @@ class musicFan:
         self.session = np.int_(tastes[11])
         self.dataID = np.array(tastes[13],dtype = "str")
         #self.songID = tastes[14] #this has issues right now, always use dataID
-        self.response = np.int_(tastes[12])
+        self.response = np.int_(tastes[12]) == 1 #Mask array of True or False where True is like and False is no like.
         self.tastes = np.array([np.float64(tastes[0]), np.float64(tastes[1]), np.int_(tastes[2])\
                        , np.float64(tastes[3]), np.int_(tastes[4]), np.float64(tastes[5]),\
                        np.float64(tastes[6]), np.float64(tastes[7]), np.float64(tastes[8])\
@@ -125,6 +125,10 @@ class songs:
                                     np.int_(features[:,15]), np.float64(features[:,20]), np.float64(features[:,1]),\
                                     np.float64(features[:,11]),np.float64(features[:,13]),np.float64(features[:,25]),np.float64(features[:,21])]).T
       
+    def selectFeatures(self):
+        a=1
+        #This will be code to select features based on variance.
+    
     def recommend(self,user):
         
         a = np.concatenate([self.ID[user.cSim[i]>0.95] for i in range(len(user.cSim))])

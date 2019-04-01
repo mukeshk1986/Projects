@@ -47,21 +47,26 @@ m_Fans = []
 #adding songs to songs object, contains all songs
 songs = spc.songs(music_Data[np.isfinite(np.float64(music_Data[:,7]))])
 
+#This loop creates a list of m_Fan objects.
 t1 = time.time()
 for i in range(10):
-    #opening user data:
     temp = [[user_Data[x][y+1] for x in range(len(user_Data)) if i == int(user_Data[x][14])] for y in range(16) if y !=13]
-    #creating list of user objects:
     m_Fans.append(spc.musicFan(i,temp))
 t2 = time.time()
 print(t2-t1, "seconds for making user objects")
-    
+
+
+#------------------------------------------------------------------------------#
+#this pulls additional info from the database file    
 t1 = time.time()
 for i in range(10):
-    m_Fans[i].getFromData(data_Base) #this pulls additional info from the database file
+    m_Fans[i].getFromData(data_Base) 
 t2 = time.time()
 print(t2-t1, "seconds for getting data from database")
-    
+
+
+#------------------------------------------------------------------------------#  
+#this applies cosinesimilarity method between each user and complete song list  
 t1 = time.time()
 for i in range(10):
     m_Fans[i].cosineSimilarity(songs) #users have a variable called cSim which is the output of cosineSimilarity:
