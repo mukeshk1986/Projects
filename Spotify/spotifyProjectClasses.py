@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Feb 25 15:57:40 2019
-
 @author: agarc
 """
 import numpy as np
@@ -63,7 +62,6 @@ class musicFan:
             ax1.set_title(self.keys[i[0]]+"vs."+self.keys[i[1]])
             plt.savefig("UserOutput/User"+str(self.ID)+"/scatters/"+self.keys[i[0]]+"_"+self.keys[i[1]]+".png")
             plt.close("all")
-            
         print(combinations)
         print(len(combinations))
         

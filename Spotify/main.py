@@ -46,7 +46,7 @@ m_Fans = []
 #adding songs to songs object, contains all songs
 songs = spc.songs(music_Data[np.isfinite(np.float64(music_Data[:,7]))])
 
-for i in range(10):
+for i in range(1):
     #opening user data:
     temp = [[user_Data[x][y+1] for x in range(len(user_Data)) if i == int(user_Data[x][14])] for y in range(16) if y !=13]
     #creating list of user objects:
