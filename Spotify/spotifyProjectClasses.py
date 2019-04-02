@@ -8,12 +8,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.metrics
 import sklearn.preprocessing
+from sklearn.feature_selection import VarianceThreshold
 import os
 
 class musicFan:
     
-    keys = ["danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness"\
-            ,"liveness","valence","tempo"]
+    keys = np.array(["danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness"\
+            ,"liveness","valence","tempo"])
     indices = [0,1,2,3,4,5,6,7,8,9,10]
     
     def __init__(self,ID,tastes):
@@ -125,8 +126,10 @@ class songs:
                                     np.int_(features[:,15]), np.float64(features[:,20]), np.float64(features[:,1]),\
                                     np.float64(features[:,11]),np.float64(features[:,13]),np.float64(features[:,25]),np.float64(features[:,21])]).T
       
-    def selectFeatures(self):
-        a=1
+    def selectFeatures(self,variance):
+        selection = VarianceThreshold(threshold = (variance))
+        selection.fit_transform(self.features)
+        return selection.get_support()
         #This will be code to select features based on variance.
     
     def recommend(self,user):
