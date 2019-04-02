@@ -14,6 +14,7 @@ import os,sys
 import spotifyProjectClasses as spc
 import pandas as pd
 import time
+import collections
 
 
 t0 = time.time()
@@ -73,6 +74,11 @@ for i in range(10):
 t2 = time.time()
 print(t2-t1, "seconds for applying cosine similarity")
 
+
+#------------------------------------------------------------------------------# 
+#This returns a list of recommended songs for each user.
+
+a = songs.recommend(m_Fans[0])
 
 '''
 #for example:

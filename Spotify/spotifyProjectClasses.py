@@ -10,6 +10,7 @@ import sklearn.metrics
 import sklearn.preprocessing
 from sklearn.feature_selection import VarianceThreshold
 import os
+import collections
 
 class musicFan:
     
@@ -130,12 +131,12 @@ class songs:
         selection = VarianceThreshold(threshold = (variance))
         selection.fit_transform(self.features)
         return selection.get_support()
-        #This will be code to select features based on variance.
+        #This will be code to select features based on variance. Return a mask for features.
     
     def recommend(self,user):
         
-        a = np.concatenate([self.ID[user.cSim[i]>0.95] for i in range(len(user.cSim))])
-                
+        a = np.concatenate([self.name[user.cSim[i]>0.992] for i in range(len(user.cSim))])
+        b = collections.Counter(a).most_common() #returns a count of values        
         print(a.shape)
-        #return a    
-        return np.unique(a, return_counts = True)
+        return a    
+        #return np.unique(a, return_counts = True)
