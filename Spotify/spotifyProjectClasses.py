@@ -21,19 +21,33 @@ class musicFan:
         self.ID = ID
         self.session = np.int_(tastes[11])
         self.dataID = np.array(tastes[13],dtype = "str")
-        self.songID = tastes[14]
+        #self.songID = tastes[14] #this has issues right now, always use dataID
         self.response = np.int_(tastes[12])
         self.tastes = np.array([np.float64(tastes[0]), np.float64(tastes[1]), np.int_(tastes[2])\
                        , np.float64(tastes[3]), np.int_(tastes[4]), np.float64(tastes[5]),\
                        np.float64(tastes[6]), np.float64(tastes[7]), np.float64(tastes[8])\
                        , np.float64(tastes[9]), np.float64(tastes[10])]).T
+        self.songNames = []
+        self.simSongsNames = []
+        self.simSongsID = []
         
         if not os.path.exists("UserOutput"):
             os.makedirs("UserOutput")
         if not os.path.exists("UserOutput/User"+str(self.ID)):
             os.makedirs("UserOutput/User"+str(self.ID))
         
-  
+        
+    def getFromData(self,dataBase):
+        self.songNames = []
+        songNames = np.array(dataBase["song_name"])
+        dID = np.array(dataBase["database_id"])
+        for i in range(len(self.dataID)):
+            for x in range(len(songNames)):
+                if dID[x] in self.dataID[i]:
+                    self.songNames.append(songNames[x])
+        self.songNames = np.array(self.songNames)
+
+        
     def mean(self):
         self.mean_Tastes = np.mean(self.tastes, axis = 1)
         self.median_Tastes = np.median(self.tastes, axis = 1)
@@ -87,6 +101,8 @@ class musicFan:
         a = sklearn.preprocessing.normalize(self.tastes[self.response == 1],axis=0)
         b = sklearn.preprocessing.normalize(songs.features,axis=0)
         self.cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
+        self.simSongsNames = np.array([songs.name[i>0.992] for i in self.cSim])
+        self.simSongsID = np.array([songs.ID[i>0.992] for i in self.cSim])
         print("Cosinesimilarity successful for user:",self.ID,".")
         
             
