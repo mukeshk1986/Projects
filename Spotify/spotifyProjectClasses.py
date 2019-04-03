@@ -135,8 +135,6 @@ class songs:
     
     def recommend(self,user):
         
-        a = np.concatenate([self.name[user.cSim[i]>0.992] for i in range(len(user.cSim))])
+        a = np.concatenate([self.ID[user.cSim[i]>0.97] for i in range(len(user.cSim))])
         b = collections.Counter(a).most_common() #returns a count of values        
-        print(a.shape)
-        return a    
-        #return np.unique(a, return_counts = True)
+        return b
