@@ -8,12 +8,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.metrics
 import sklearn.preprocessing
+from sklearn.feature_selection import VarianceThreshold
 import os
+import collections
 
 class musicFan:
     
-    keys = ["danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness"\
-            ,"liveness","valence","tempo"]
+    keys = np.array(["danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness"\
+            ,"liveness","valence","tempo"])
     indices = [0,1,2,3,4,5,6,7,8,9,10]
     
     def __init__(self,ID,tastes):
@@ -22,7 +24,7 @@ class musicFan:
         self.session = np.int_(tastes[11])
         self.dataID = np.array(tastes[13],dtype = "str")
         #self.songID = tastes[14] #this has issues right now, always use dataID
-        self.response = np.int_(tastes[12])
+        self.response = np.int_(tastes[12]) == 1 #Mask array of True or False where True is like and False is no like.
         self.tastes = np.array([np.float64(tastes[0]), np.float64(tastes[1]), np.int_(tastes[2])\
                        , np.float64(tastes[3]), np.int_(tastes[4]), np.float64(tastes[5]),\
                        np.float64(tastes[6]), np.float64(tastes[7]), np.float64(tastes[8])\
@@ -125,10 +127,14 @@ class songs:
                                     np.int_(features[:,15]), np.float64(features[:,20]), np.float64(features[:,1]),\
                                     np.float64(features[:,11]),np.float64(features[:,13]),np.float64(features[:,25]),np.float64(features[:,21])]).T
       
+    def selectFeatures(self,variance):
+        selection = VarianceThreshold(threshold = (variance))
+        selection.fit_transform(self.features)
+        return selection.get_support()
+        #This will be code to select features based on variance. Return a mask for features.
+    
     def recommend(self,user):
         
-        a = np.concatenate([self.ID[user.cSim[i]>0.95] for i in range(len(user.cSim))])
-                
-        print(a.shape)
-        #return a    
-        return np.unique(a, return_counts = True)
+        a = np.concatenate([self.ID[user.cSim[i]>0.97] for i in range(len(user.cSim))])
+        b = collections.Counter(a).most_common() #returns a count of values        
+        return b
