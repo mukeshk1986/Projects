@@ -14,7 +14,6 @@ import os,sys
 import spotifyProjectClasses as spc
 import pandas as pd
 import time
-import collections
 
 
 t0 = time.time()

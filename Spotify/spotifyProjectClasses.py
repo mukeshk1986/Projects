@@ -106,6 +106,9 @@ class musicFan:
         self.simSongsNames = np.array([songs.name[i>0.992] for i in self.cSim])
         self.simSongsID = np.array([songs.ID[i>0.992] for i in self.cSim])
         print("Cosinesimilarity successful for user:",self.ID,".")
+    
+    def crossValidate(userList):
+        a=1
         
             
         
