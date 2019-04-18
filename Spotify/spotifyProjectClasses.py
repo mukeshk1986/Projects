@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import sklearn.metrics
 import sklearn.preprocessing
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.model_selection import train_test_split
 import os
 import collections
 
@@ -17,6 +18,7 @@ class musicFan:
     keys = np.array(["danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness"\
             ,"liveness","valence","tempo"])
     indices = [0,1,2,3,4,5,6,7,8,9,10]
+    univMask = [True,True,True,True,True,True,True,True,True,True,True]
     
     def __init__(self,ID,tastes):
         
@@ -32,6 +34,7 @@ class musicFan:
         self.songNames = []
         self.simSongsNames = []
         self.simSongsID = []
+        self.selfMask = [True,True,True,True,True,True,True,False,True,True,True]
         
         if not os.path.exists("UserOutput"):
             os.makedirs("UserOutput")
@@ -107,8 +110,23 @@ class musicFan:
         self.simSongsID = np.array([songs.ID[i>0.992] for i in self.cSim])
         print("Cosinesimilarity successful for user:",self.ID,".")
     
-    def crossValidate(userList):
-        a=1
+    def train_Test(userList):
+        print("INITIATING CROSS VALIDATION")
+        print("*----------------------------------------------------*")
+        for i in userList:
+            X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.4, random_state=0)
+            print("For user:",i.ID,"the shapes of X_train,X_test,y_train,and y_test are:")
+            print(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
+            a = sklearn.preprocessing.normalize(X_train[y_train == 1],axis=0)
+            b = sklearn.preprocessing.normalize(X_test[y_test == 1],axis=0)
+            i.cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
+            print("*----------------------------------------------------*")
+            print((y_test==1).shape)
+            print(i.cSim.shape)
+            #print(i.cSim>0.8)
+            
+        print("*----------------------------------------------------*")
+        print("CROSS VALIDATION COMPLETE")
         
             
         

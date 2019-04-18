@@ -14,7 +14,7 @@ import os,sys
 import spotifyProjectClasses as spc
 import pandas as pd
 import time
-
+np.set_printoptions(threshold=sys.maxsize)
 
 t0 = time.time()
 
@@ -23,7 +23,8 @@ filepath = os.path.dirname(os.path.abspath(sys.argv[0]))
 os.chdir(filepath)
 
 #opening all user data and music data
-#############################################################
+print("LOADING FILES")
+print("*----------------------------------------------------*")
 user_Filenames = os.listdir("user_data")
 music_Filenames = os.listdir("music_data")
 #############################################################
@@ -45,10 +46,14 @@ t1 = time.time()
 #initializing a set of user objects based on the musicFan class
 m_Fans = []
 #adding songs to songs object, contains all songs
+print("CREATING SONGS INSTANCE")
+print("*----------------------------------------------------*")
 songs = spc.songs(music_Data[np.isfinite(np.float64(music_Data[:,7]))])
 
 #This loop creates a list of m_Fan objects.
 t1 = time.time()
+print("CREATING MUSIC FAN INSTANCES")
+print("*----------------------------------------------------*")
 for i in range(10):
     temp = [[user_Data[x][y+1] for x in range(len(user_Data)) if i == int(user_Data[x][14])] for y in range(16) if y !=13]
     m_Fans.append(spc.musicFan(i,temp))
@@ -57,13 +62,17 @@ print(t2-t1, "seconds for making user objects")
 
 
 #------------------------------------------------------------------------------#
-#this pulls additional info from the database file    
+print("GETTING ADDITONAL DATA FROM DB FILE")
+print("*----------------------------------------------------*")
 t1 = time.time()
 for i in range(10):
     m_Fans[i].getFromData(data_Base) 
 t2 = time.time()
 print(t2-t1, "seconds for getting data from database")
 
+#------------------------------------------------------------------------------#
+#This selects features by training/testing model
+#spc.musicFan.train_Test(m_Fans)
 
 #------------------------------------------------------------------------------#  
 #this applies cosinesimilarity method between each user and complete song list  
