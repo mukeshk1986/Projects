@@ -14,7 +14,7 @@ import os,sys
 import spotifyProjectClasses as spc
 import pandas as pd
 import time
-np.set_printoptions(threshold=sys.maxsize)
+#np.set_printoptions(threshold=sys.maxsize)
 
 t0 = time.time()
 
@@ -72,21 +72,23 @@ print(t2-t1, "seconds for getting data from database")
 
 #------------------------------------------------------------------------------#
 #This selects features by training/testing model
-#spc.musicFan.train_Test(m_Fans)
+spc.musicFan.train_Test(m_Fans)
 
 #------------------------------------------------------------------------------#  
-#this applies cosinesimilarity method between each user and complete song list  
+#this applies cosinesimilarity method between each user and complete song list
+'''  
 t1 = time.time()
 for i in range(10):
-    m_Fans[i].cosineSimilarity(songs) #users have a variable called cSim which is the output of cosineSimilarity:
+    m_Fans[i].cosineSimilarity(songs,outputRec=True) #users have a variable called cSim which is the output of cosineSimilarity:
 t2 = time.time()
 print(t2-t1, "seconds for applying cosine similarity")
+'''
 
 
 #------------------------------------------------------------------------------# 
 #This returns a list of recommended songs for each user.
 
-a = songs.recommend(m_Fans[0])
+#a = songs.recommend(m_Fans[0])
 
 '''
 #for example:

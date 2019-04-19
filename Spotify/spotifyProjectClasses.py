@@ -18,7 +18,6 @@ class musicFan:
     keys = np.array(["danceability","energy","key","loudness","mode","speechiness","acousticness","instrumentalness"\
             ,"liveness","valence","tempo"])
     indices = [0,1,2,3,4,5,6,7,8,9,10]
-    univMask = [True,True,True,True,True,True,True,True,True,True,True]
     
     def __init__(self,ID,tastes):
         
@@ -34,7 +33,9 @@ class musicFan:
         self.songNames = []
         self.simSongsNames = []
         self.simSongsID = []
-        self.selfMask = [True,True,True,True,True,True,True,False,True,True,True]
+        self.fMask = [True,True,True,False,False,True,True,False,False,True,True]
+        #Discarded features: Loudness (Related to much to energy) mode (binary, unsure how much it matters)
+        #, instrumentalness (too related to speechiness), liveness (probably desn't matter)
         
         if not os.path.exists("UserOutput"):
             os.makedirs("UserOutput")
@@ -102,31 +103,48 @@ class musicFan:
             plt.savefig("UserOutput/User"+str(self.ID)+"/histograms/"+self.keys[i]+"_histogram"+".png")
             plt.close("all")
             
-    def cosineSimilarity(self,songs):
-        a = sklearn.preprocessing.normalize(self.tastes[self.response == 1],axis=0)
-        b = sklearn.preprocessing.normalize(songs.features,axis=0)
-        self.cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
-        self.simSongsNames = np.array([songs.name[i>0.992] for i in self.cSim])
-        self.simSongsID = np.array([songs.ID[i>0.992] for i in self.cSim])
+    def cosineSimilarity(self,songs,outputRec = False):
+        a = sklearn.preprocessing.normalize(self.tastes[:,self.fMask][self.response == 1],axis=0)
+        print(self.tastes[:,self.fMask][self.response == 1].shape)
+        b = sklearn.preprocessing.normalize(songs.features[:,self.fMask],axis=0)
+        print(songs.features[:,self.fMask].shape)
+        cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
+        self.simSongsNames = np.array([songs.name[i>0.992] for i in cSim])
+        self.simSongsID = np.array([songs.ID[i>0.992] for i in cSim])
+        if outputRec:
+            a = np.concatenate([songs.ID[cSim[i]>0.985] for i in range(len(cSim))])
+            b = collections.Counter(a).most_common() #returns a count of values        
+            print("Recommended songs for user:",self.ID,".")
+            print("ID",b[0:10])
+            return b
         print("Cosinesimilarity successful for user:",self.ID,".")
     
     def train_Test(userList):
-        print("INITIATING CROSS VALIDATION")
+        print("INITIATING MODEL TESTING FOR CSIM")
         print("*----------------------------------------------------*")
         for i in userList:
-            X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.4, random_state=0)
+            X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=0)
             print("For user:",i.ID,"the shapes of X_train,X_test,y_train,and y_test are:")
             print(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
-            a = sklearn.preprocessing.normalize(X_train[y_train == 1],axis=0)
-            b = sklearn.preprocessing.normalize(X_test[y_test == 1],axis=0)
-            i.cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
+            a = sklearn.preprocessing.normalize(X_train[:,i.fMask][y_train == 1],axis=0)
             print("*----------------------------------------------------*")
-            print((y_test==1).shape)
-            print(i.cSim.shape)
+            print("The shape of a is:",a.shape)
+            b = sklearn.preprocessing.normalize(X_test[:,i.fMask],axis=0)
+            print("The shape of b is:",b.shape)
+            cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
+            mean = np.mean(cSim,axis = 0)
+            print("*----------------------------------------------------*")
+            #print((y_test==1).shape)
+            print("The shape of mean is:",mean.shape)
+            #print("The mean is:",mean)
+            #print("The test labels are:",y_test)
+            print(y_test[mean>0.85].sum()/len(y_test[mean>0.8]))
+            print(y_test.sum()/len(y_test))
+            print("*----------------------------------------------------*")
             #print(i.cSim>0.8)
             
         print("*----------------------------------------------------*")
-        print("CROSS VALIDATION COMPLETE")
+        print("MODEL TESTING COMPLETE")
         
             
         
