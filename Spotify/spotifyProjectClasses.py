@@ -33,9 +33,13 @@ class musicFan:
         self.songNames = []
         self.simSongsNames = []
         self.simSongsID = []
-        self.fMask = [True,True,True,False,False,True,True,False,False,True,True]
+        #self.fMask = [True,False,False,True,False,True,False,True,True,True,True]
         #Discarded features: Loudness (Related to much to energy) mode (binary, unsure how much it matters)
         #, instrumentalness (too related to speechiness), liveness (probably desn't matter)
+        self.fMask = [True,True,True,True,True,True,True,True,True,True,True]
+        
+        print("CREATING musicFan INSTANCE FOR USER:",self.ID,"WITH ITEMxFEATURE MATRIX OF SHAPE:",self.tastes.shape)
+        print("*----------------------------------------------------*")
         
         if not os.path.exists("UserOutput"):
             os.makedirs("UserOutput")
@@ -44,6 +48,8 @@ class musicFan:
         
         
     def getFromData(self,dataBase):
+        print("GETTING ADDITONAL DATA FROM DB FILE FOR USER:",self.ID)
+        print("*----------------------------------------------------*")
         self.songNames = []
         songNames = np.array(dataBase["song_name"])
         dID = np.array(dataBase["database_id"])
@@ -62,7 +68,7 @@ class musicFan:
               ,self.median_Tastes,"\n","Percent positive: " +str(self.percent_Positive)+"\n")
         #return self.mean_Tastes
 
-    def makeScatters(self):
+    def makeScatters(self,songs):
         num_Comb = 55
         
         if not os.path.exists("UserOutput/User"+str(self.ID)+"/scatters"):
@@ -76,8 +82,8 @@ class musicFan:
                     combinations.append([i,j])
         for i in combinations:
             fig1, ax1 = plt.subplots()
-            ax1.scatter(self.tastes[i[0]][np.isin(self.response,0)],self.tastes[i[1]][np.isin(self.response,0)], color = "red")
-            ax1.scatter(self.tastes[i[0]][np.isin(self.response,1)],self.tastes[i[1]][np.isin(self.response,1)], color = "blue")
+            ax1.scatter(songs.features[:,i[0]][::500],songs.features[:,i[1]][::500], color = "red")
+            ax1.scatter(self.tastes[:,i[0]][self.response==1],self.tastes[:,i[1]][self.response==1], color = "blue")
             ax1.set_xlabel(self.keys[i[0]])
             ax1.set_ylabel(self.keys[i[1]])
             ax1.set_title(self.keys[i[0]]+"vs."+self.keys[i[1]])
@@ -87,16 +93,15 @@ class musicFan:
         print(combinations)
         print(len(combinations))
         
-    def makeHistos(self):
+    def makeHistos(self,songs):
         
         if not os.path.exists("UserOutput/User"+str(self.ID)+"/histograms"):
             os.makedirs("UserOutput/User"+str(self.ID)+"/histograms")
         
         for i in self.indices:
             fig1, ax1 = plt.subplots()
-            ax1.hist(self.tastes[i], bins = 20, color = "green")
-            ax1.hist(self.tastes[i][np.isin(self.response,0)], bins = 20, color = "red")
-            ax1.hist(self.tastes[i][np.isin(self.response,1)], bins = 20, color = "blue")
+            ax1.hist(songs.features[:,i], bins = 20, color = "red",density=True,histtype = "step")
+            ax1.hist(self.tastes[:,i][self.response==1], bins = 20, color = "blue",density=True,histtype = "step")
             ax1.set_xlabel(self.keys[i])
             ax1.set_ylabel("count")
             ax1.set_title("Histogram of "+self.keys[i]+" for user: "+str(self.ID))
@@ -109,10 +114,10 @@ class musicFan:
         b = sklearn.preprocessing.normalize(songs.features[:,self.fMask],axis=0)
         print(songs.features[:,self.fMask].shape)
         cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
-        self.simSongsNames = np.array([songs.name[i>0.992] for i in cSim])
-        self.simSongsID = np.array([songs.ID[i>0.992] for i in cSim])
+        self.simSongsNames = np.array([songs.name[i>0.95] for i in cSim])
+        self.simSongsID = np.array([songs.ID[i>0.95] for i in cSim])
         if outputRec:
-            a = np.concatenate([songs.ID[cSim[i]>0.985] for i in range(len(cSim))])
+            a = np.concatenate([songs.ID[cSim[i]>0.95] for i in range(len(cSim))])
             b = collections.Counter(a).most_common() #returns a count of values        
             print("Recommended songs for user:",self.ID,".")
             print("ID",b[0:10])
@@ -122,27 +127,24 @@ class musicFan:
     def train_Test(userList):
         print("INITIATING MODEL TESTING FOR CSIM")
         print("*----------------------------------------------------*")
+        print("For a user, i, the chance of cosineSimilarity recommendation being better than random song picks is:")
         for i in userList:
-            X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=0)
-            print("For user:",i.ID,"the shapes of X_train,X_test,y_train,and y_test are:")
-            print(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
-            a = sklearn.preprocessing.normalize(X_train[:,i.fMask][y_train == 1],axis=0)
-            print("*----------------------------------------------------*")
-            print("The shape of a is:",a.shape)
-            b = sklearn.preprocessing.normalize(X_test[:,i.fMask],axis=0)
-            print("The shape of b is:",b.shape)
-            cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
-            mean = np.mean(cSim,axis = 0)
-            print("*----------------------------------------------------*")
-            #print((y_test==1).shape)
-            print("The shape of mean is:",mean.shape)
-            #print("The mean is:",mean)
-            #print("The test labels are:",y_test)
-            print(y_test[mean>0.85].sum()/len(y_test[mean>0.8]))
-            print(y_test.sum()/len(y_test))
-            print("*----------------------------------------------------*")
-            #print(i.cSim>0.8)
-            
+            plus = 0
+            size = 0
+            for y in range(100):
+                X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.4, random_state=y)
+                a = sklearn.preprocessing.normalize(X_train[:,i.fMask][y_train == 1],axis=0)
+                b = sklearn.preprocessing.normalize(X_test[:,i.fMask],axis=0)
+                labels = np.array([str(x) for x in range(len(b))])
+                cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
+                c = np.concatenate([labels[cSim[x]>0.985] for x in range(len(cSim))])
+                d = collections.Counter(c).most_common() #returns a count of values
+                if y_test[[int(x[0]) for x in d[0:10]]].sum()/len(y_test[[int(x[0]) for x in d[0:10]]]) > y_test.sum()/len(y_test):
+                    plus = plus+1
+                size = size + len(y_test[[int(x[0]) for x in d[0:10]]])
+            print("For:",i.ID,":",plus/y)
+            #plt.hist(cSim.flatten(),bins=10)
+            #plt.show()
         print("*----------------------------------------------------*")
         print("MODEL TESTING COMPLETE")
         
@@ -165,6 +167,9 @@ class songs:
         self.features = np.array([np.float64(features[:,7]), np.float64(features[:,10]), np.float64(features[:,12]), np.float64(features[:,14]),\
                                     np.int_(features[:,15]), np.float64(features[:,20]), np.float64(features[:,1]),\
                                     np.float64(features[:,11]),np.float64(features[:,13]),np.float64(features[:,25]),np.float64(features[:,21])]).T
+        
+        print("CREATING songs INSTANCE WITH ITEMxFEATURE MATRIX OF SHAPE:",self.features.shape)
+        print("*----------------------------------------------------*")
       
     def selectFeatures(self,variance):
         selection = VarianceThreshold(threshold = (variance))
