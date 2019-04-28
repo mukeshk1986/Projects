@@ -34,9 +34,9 @@ class musicFan:
         self.songNames = []
         self.simSongsNames = []
         self.simSongsID = []
-        #self.fMask = [True,True,True,True,False,True,True,False,True,False,True]
+        self.fMask = [True,True,True,True,False,True,True,False,True,False,True]
         #Discarded features: Valence,Instrumentalness
-        self.fMask = [True,True,True,True,True,True,True,True,True,True,True]
+        #self.fMask = [True,True,True,True,True,True,True,True,True,True,True]
         
         print("CREATING musicFan INSTANCE FOR USER:",self.ID,"WITH ITEMxFEATURE MATRIX OF SHAPE:",self.tastes.shape)
         print("*----------------------------------------------------*")
@@ -125,13 +125,13 @@ class musicFan:
         print("Cosinesimilarity successful for user:",self.ID,".")
     
     def train_Test(userList,cSim=False,KNN=False):
-        print("INITIATING MODEL TESTING FOR CSIM")
+        print("INITIATING MODEL TESTING")
         print("*----------------------------------------------------*")
-        print("For a user, i, the chance of cosineSimilarity recommendation being better than random song picks is:")
-        for i in userList:
-            plus = 0
-            size = 0
-            if cSim:
+        if cSim:
+            print("For a user, i, the chance of cosineSimilarity recommendation being better than random song picks is:\n")
+            for i in userList:
+                plus = 0
+                size = 0
                 for y in range(100):
                     X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=y)
                     a = sklearn.preprocessing.normalize(X_train[:,i.fMask][y_train == 1],axis=0)
@@ -142,19 +142,24 @@ class musicFan:
                     d = collections.Counter(c).most_common() #returns a count of values
                     if y_test[[int(x[0]) for x in d[0:10]]].sum()/len(y_test[[int(x[0]) for x in d[0:10]]]) > y_test.sum()/len(y_test):
                         plus = plus+1
-                    size = size + len(y_test[[int(x[0]) for x in d[0:10]]])
-                print("For:",i.ID,":",plus/(y+1), "Positive response size:",(y_train==1).sum())
+                        size = size + len(y_test[[int(x[0]) for x in d[0:10]]])
+                print("For:",i.ID,":",plus/(y+1))
                 #plt.hist(cSim.flatten(),bins=10)
                 #plt.show()
-            elif KNN:
-                for y in range(1):
+        if KNN:
+            print("For a user, i, the average accuracy of KNN recommendation is:\n")
+            for i in userList:
+                acc = 0
+                for y in range(100):
                     X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=y)
-                    a = sklearn.preprocessing.normalize(X_train[:,i.fMask],axis=0)
-                    b = sklearn.preprocessing.normalize(X_test[:,i.fMask],axis=0)
+                    X_train = sklearn.preprocessing.normalize(X_train,axis=0)
+                    X_test = sklearn.preprocessing.normalize(X_test,axis=0)
                     knn = KNeighborsClassifier(n_neighbors=5)
-                    knn.fit(a, np.int64(y_train))
-                    y_Pred = knn.predict(b)
-                    print(y_Pred)
+                    knn.fit(X_train[:,i.fMask], np.int64(y_train))
+                    y_Pred = knn.predict(X_test[:,i.fMask])
+                    acc = acc + sklearn.metrics.accuracy_score(y_test,y_Pred)
+                print("For:",i.ID,":",acc/(y+1))
+                
         print("*----------------------------------------------------*")
         print("MODEL TESTING COMPLETE")
         
