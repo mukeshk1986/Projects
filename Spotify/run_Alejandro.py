@@ -48,10 +48,11 @@ for i in range(10):
 t2 = time.time()
 
 #this test the cSim model for each user.
-spc.musicFan.train_Test(m_Fans)
+#spc.musicFan.train_Test(m_Fans,cSim=True)
+spc.musicFan.train_Test(m_Fans,KNN=True)
 #running cSim model and outputting recommendation:
-for i in range(10):
-    m_Fans[i].cosineSimilarity(songs,outputRec=True)
+#for i in range(10):
+#    m_Fans[i].cosineSimilarity(songs,outputRec=True)
 
 
 

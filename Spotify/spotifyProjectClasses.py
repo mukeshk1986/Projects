@@ -10,6 +10,7 @@ import sklearn.metrics
 import sklearn.preprocessing
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 import os
 import collections
 
@@ -33,9 +34,8 @@ class musicFan:
         self.songNames = []
         self.simSongsNames = []
         self.simSongsID = []
-        #self.fMask = [True,False,False,True,False,True,False,True,True,True,True]
-        #Discarded features: Loudness (Related to much to energy) mode (binary, unsure how much it matters)
-        #, instrumentalness (too related to speechiness), liveness (probably desn't matter)
+        #self.fMask = [True,True,True,True,False,True,True,False,True,False,True]
+        #Discarded features: Valence,Instrumentalness
         self.fMask = [True,True,True,True,True,True,True,True,True,True,True]
         
         print("CREATING musicFan INSTANCE FOR USER:",self.ID,"WITH ITEMxFEATURE MATRIX OF SHAPE:",self.tastes.shape)
@@ -124,27 +124,37 @@ class musicFan:
             return b
         print("Cosinesimilarity successful for user:",self.ID,".")
     
-    def train_Test(userList):
+    def train_Test(userList,cSim=False,KNN=False):
         print("INITIATING MODEL TESTING FOR CSIM")
         print("*----------------------------------------------------*")
         print("For a user, i, the chance of cosineSimilarity recommendation being better than random song picks is:")
         for i in userList:
             plus = 0
             size = 0
-            for y in range(100):
-                X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.4, random_state=y)
-                a = sklearn.preprocessing.normalize(X_train[:,i.fMask][y_train == 1],axis=0)
-                b = sklearn.preprocessing.normalize(X_test[:,i.fMask],axis=0)
-                labels = np.array([str(x) for x in range(len(b))])
-                cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
-                c = np.concatenate([labels[cSim[x]>0.985] for x in range(len(cSim))])
-                d = collections.Counter(c).most_common() #returns a count of values
-                if y_test[[int(x[0]) for x in d[0:10]]].sum()/len(y_test[[int(x[0]) for x in d[0:10]]]) > y_test.sum()/len(y_test):
-                    plus = plus+1
-                size = size + len(y_test[[int(x[0]) for x in d[0:10]]])
-            print("For:",i.ID,":",plus/y)
-            #plt.hist(cSim.flatten(),bins=10)
-            #plt.show()
+            if cSim:
+                for y in range(100):
+                    X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=y)
+                    a = sklearn.preprocessing.normalize(X_train[:,i.fMask][y_train == 1],axis=0)
+                    b = sklearn.preprocessing.normalize(X_test[:,i.fMask],axis=0)
+                    labels = np.array([str(x) for x in range(len(b))])
+                    cSim = sklearn.metrics.pairwise.cosine_similarity(a,b)
+                    c = np.concatenate([labels[cSim[x]>0.985] for x in range(len(cSim))])
+                    d = collections.Counter(c).most_common() #returns a count of values
+                    if y_test[[int(x[0]) for x in d[0:10]]].sum()/len(y_test[[int(x[0]) for x in d[0:10]]]) > y_test.sum()/len(y_test):
+                        plus = plus+1
+                    size = size + len(y_test[[int(x[0]) for x in d[0:10]]])
+                print("For:",i.ID,":",plus/(y+1), "Positive response size:",(y_train==1).sum())
+                #plt.hist(cSim.flatten(),bins=10)
+                #plt.show()
+            elif KNN:
+                for y in range(1):
+                    X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=y)
+                    a = sklearn.preprocessing.normalize(X_train[:,i.fMask],axis=0)
+                    b = sklearn.preprocessing.normalize(X_test[:,i.fMask],axis=0)
+                    knn = KNeighborsClassifier(n_neighbors=5)
+                    knn.fit(a, np.int64(y_train))
+                    y_Pred = knn.predict(b)
+                    print(y_Pred)
         print("*----------------------------------------------------*")
         print("MODEL TESTING COMPLETE")
         
