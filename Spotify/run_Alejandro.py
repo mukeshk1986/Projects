@@ -43,12 +43,12 @@ for i in range(10):
     m_Fans[i].getFromData(data_Base)
 
 #this test the cSim model for each user.
-spc.musicFan.train_Test(m_Fans,cSim=True)
-spc.musicFan.train_Test(m_Fans,KNN=True)
-spc.musicFan.train_Test(m_Fans,logistic=True)
+spc.musicFan.train_Test(m_Fans,KM=True)
+#spc.musicFan.train_Test(m_Fans,KNN=True)
+#spc.musicFan.train_Test(m_Fans,logistic=True)
 #running cSim model and outputting recommendation:
-for i in range(10):
-    m_Fans[i].cosineSimilarity(songs,outputRec=True)
+#for i in range(10):
+#    m_Fans[i].cosineSimilarity(songs,outputRec=True)
 
 
 

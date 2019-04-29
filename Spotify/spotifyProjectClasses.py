@@ -5,6 +5,7 @@ import sklearn.preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.cluster import KMeans
 import os
 import collections
 
@@ -121,7 +122,7 @@ class musicFan:
             return b
         print("Cosinesimilarity successful for user:",self.ID,".")
     
-    def train_Test(userList,cSim=False,KNN=False,logistic=False):
+    def train_Test(userList,cSim=False,KNN=False,logistic=False,KM=False):
         print("INITIATING MODEL TESTING")
         print("*----------------------------------------------------*")
         if cSim:
@@ -165,6 +166,19 @@ class musicFan:
                     logReg = LogisticRegression(solver='lbfgs')
                     logReg.fit(X_train[:,i.fMask], y_train)
                     y_Pred = logReg.predict(X_test[:,i.fMask])
+                    acc = acc + sklearn.metrics.accuracy_score(y_test,y_Pred)
+                print("For:",i.ID,":",acc/(y+1))
+        if KM:
+            print("For a user, i, the average accuracy of logistic regression recommendation is:\n")
+            for i in userList:
+                acc = 0
+                for y in range(10):
+                    X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=y)
+                    X_train = sklearn.preprocessing.normalize(X_train,axis=0)
+                    X_test = sklearn.preprocessing.normalize(X_test,axis=0)
+                    kMeans = KMeans(n_clusters = 2)
+                    kMeans.fit(X_train[:,i.fMask], y_train)
+                    y_Pred = kMeans.predict(X_test[:,i.fMask])
                     acc = acc + sklearn.metrics.accuracy_score(y_test,y_Pred)
                 print("For:",i.ID,":",acc/(y+1))
                 
