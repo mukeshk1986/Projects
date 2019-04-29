@@ -1,12 +1,8 @@
-#This file runs various methods defined in the spotifyProjectClasses.py module.
-#Methods can be disabled by commenting lines.
-
 import numpy as np
 import os,sys
 import spotifyProjectClasses as spc
 import pandas as pd
 import time
-#np.set_printoptions(threshold=sys.maxsize)
 
 #setting the working directory to file location
 filepath = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -44,35 +40,19 @@ for i in range(10):
 
 
 for i in range(10):
-    m_Fans[i].getFromData(data_Base) 
-t2 = time.time()
+    m_Fans[i].getFromData(data_Base)
 
 #this test the cSim model for each user.
 spc.musicFan.train_Test(m_Fans,cSim=True)
 spc.musicFan.train_Test(m_Fans,KNN=True)
+spc.musicFan.train_Test(m_Fans,logistic=True)
 #running cSim model and outputting recommendation:
-#for i in range(10):
-#    m_Fans[i].cosineSimilarity(songs,outputRec=True)
+for i in range(10):
+    m_Fans[i].cosineSimilarity(songs,outputRec=True)
 
 
 
 
 
 #------------------------------------------------------------------------------# 
-#This returns a list of recommended songs for each user.
 
-#a = songs.recommend(m_Fans[0])
-
-'''
-#for example:
-#mFan 0 has a cSim matrix of shape 109x265119:
-#this is because User0 liked 109 songs. Each song has an associated matrix of length 265119 attached to it.
-print(m_Fans[0].cSim.shape)
-#this matrix has values ranging from 0-1 where 0 is not similar and 1 is identical.
-#we can find all songs that are very similar to the suer-liked song by using a mask:
-print(songs.name[m_Fans[0].cSim[0]>0.992])   
-#this prints out the names of songs whose features are similar to those of song0 in user0
-#we can probably improve this by removing features that have little effect on the actual sound. I have tested some of these by comparing the songs on youtube
-#and it seems to work decently.
-'''   
- 

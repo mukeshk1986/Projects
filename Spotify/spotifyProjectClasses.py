@@ -1,16 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 25 15:57:40 2019
-
-@author: agarc
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.metrics
 import sklearn.preprocessing
-from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
 import os
 import collections
 
@@ -100,11 +94,14 @@ class musicFan:
         
         for i in self.indices:
             fig1, ax1 = plt.subplots()
-            ax1.hist(songs.features[:,i], bins = 20, color = "red",density=True,histtype = "step")
-            ax1.hist(self.tastes[:,i][self.response==1], bins = 20, color = "blue",density=True,histtype = "step")
+            ax1.grid(linestyle="--")
+            #ax1.hist(songs.features[:,i], bins = 20, color = "black",density=True,histtype = "step")#all songs
+            ax1.hist(self.tastes[:,i][self.response==0], bins = 20, color = "red",density=True,histtype = "step",label="0",linewidth=2.0)#song with no like
+            ax1.hist(self.tastes[:,i][self.response==1], bins = 20, color = "blue",density=True,histtype = "step",label="1",linewidth=2.0)#songs liked
             ax1.set_xlabel(self.keys[i])
-            ax1.set_ylabel("count")
-            ax1.set_title("Histogram of "+self.keys[i]+" for user: "+str(self.ID))
+            ax1.set_ylabel("normalized count")
+            ax1.set_title("Histogram of "+self.keys[i]+" for User: "+str(self.ID))
+            ax1.legend()
             plt.savefig("UserOutput/User"+str(self.ID)+"/histograms/"+self.keys[i]+"_histogram"+".png")
             plt.close("all")
             
@@ -124,7 +121,7 @@ class musicFan:
             return b
         print("Cosinesimilarity successful for user:",self.ID,".")
     
-    def train_Test(userList,cSim=False,KNN=False):
+    def train_Test(userList,cSim=False,KNN=False,logistic=False):
         print("INITIATING MODEL TESTING")
         print("*----------------------------------------------------*")
         if cSim:
@@ -144,8 +141,6 @@ class musicFan:
                         plus = plus+1
                         size = size + len(y_test[[int(x[0]) for x in d[0:10]]])
                 print("For:",i.ID,":",plus/(y+1))
-                #plt.hist(cSim.flatten(),bins=10)
-                #plt.show()
         if KNN:
             print("For a user, i, the average accuracy of KNN recommendation is:\n")
             for i in userList:
@@ -155,8 +150,21 @@ class musicFan:
                     X_train = sklearn.preprocessing.normalize(X_train,axis=0)
                     X_test = sklearn.preprocessing.normalize(X_test,axis=0)
                     knn = KNeighborsClassifier(n_neighbors=5)
-                    knn.fit(X_train[:,i.fMask], np.int64(y_train))
+                    knn.fit(X_train[:,i.fMask], y_train)
                     y_Pred = knn.predict(X_test[:,i.fMask])
+                    acc = acc + sklearn.metrics.accuracy_score(y_test,y_Pred)
+                print("For:",i.ID,":",acc/(y+1))
+        if logistic:
+            print("For a user, i, the average accuracy of logistic regression recommendation is:\n")
+            for i in userList:
+                acc = 0
+                for y in range(100):
+                    X_train, X_test, y_train, y_test = train_test_split(i.tastes,i.response,test_size = 0.3, random_state=y)
+                    X_train = sklearn.preprocessing.normalize(X_train,axis=0)
+                    X_test = sklearn.preprocessing.normalize(X_test,axis=0)
+                    logReg = LogisticRegression(solver='lbfgs')
+                    logReg.fit(X_train[:,i.fMask], y_train)
+                    y_Pred = logReg.predict(X_test[:,i.fMask])
                     acc = acc + sklearn.metrics.accuracy_score(y_test,y_Pred)
                 print("For:",i.ID,":",acc/(y+1))
                 
@@ -185,15 +193,3 @@ class songs:
         
         print("CREATING songs INSTANCE WITH ITEMxFEATURE MATRIX OF SHAPE:",self.features.shape)
         print("*----------------------------------------------------*")
-      
-    def selectFeatures(self,variance):
-        selection = VarianceThreshold(threshold = (variance))
-        selection.fit_transform(self.features)
-        return selection.get_support()
-        #This will be code to select features based on variance. Return a mask for features.
-    
-    def recommend(self,user):
-        
-        a = np.concatenate([self.ID[user.cSim[i]>0.97] for i in range(len(user.cSim))])
-        b = collections.Counter(a).most_common() #returns a count of values        
-        return b
